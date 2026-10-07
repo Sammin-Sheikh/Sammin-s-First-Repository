@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Week 9 - Trajectory & FX</title>
+  <style>
+    body { margin: 0; padding: 0; background: #131b24; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+    h1 { color: #fff; margin-bottom: 10px; font-size: 20px; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+</head>
+<body>
+  <h1>Week 9: Aiming Trajectory Dots & Particles</h1>
+  <script>
+    (function () {
+      'use strict';
+      var M = window.Matter;
+      var width = 1024, height = 600;
+
+      var engine = M.Engine.create({ gravity: { x: 0, y: 1 } });
+      var render = M.Render.create({
+        element: document.body, engine: engine,
+        options: { width: width, height: height, wireframes: false, background: '#87CEEB' }
+      });
+
+      M.Render.run(render);
+      M.Runner.run(M.Runner.create(), engine);
+
+      var anchor = { x: 200, y: 400 };
+      var dragPos = { x: 140, y: 450 };
+
+      M.Events.on(render, 'afterRender', function () {
+        var ctx = render.context;
+        ctx.save();
+        
+        // Trajectory calculation
+        var vx = (anchor.x - dragPos.x) * 0.22;
+        var vy = (anchor.y - dragPos.y) * 0.22;
+        var cx = dragPos.x, cy = dragPos.y;
+        var gravity = engine.gravity.y * 0.28;
+
+        ctx.fillStyle = '#ffffff';
+        for (var i = 0; i < 25; i++) {
+          cx += vx; cy += vy; vy += gravity;
+          if (i % 2 === 0) {
+            ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
+          }
+        }
+
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 20px sans-serif';
+        ctx.fillText('Week 9: Parabolic Aim Trajectory Prediction Visualized', 20, 40);
+        ctx.restore();
+      });
+    })();
+  </script>
+</body>
+</html>
