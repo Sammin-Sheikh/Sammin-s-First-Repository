@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Week 4 - Interactive Slingshot</title>
+  <style>
+    body { margin: 0; padding: 0; background: #131b24; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+    h1 { color: #fff; margin-bottom: 10px; font-size: 20px; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+</head>
+<body>
+  <h1>Week 4: Drag and Pull Slingshot System</h1>
+  <script>
+    (function () {
+      'use strict';
+      var M = window.Matter;
+      var width = 1024, height = 600;
+
+      var engine = M.Engine.create({ gravity: { x: 0, y: 1 } });
+      var render = M.Render.create({
+        element: document.body, engine: engine,
+        options: { width: width, height: height, wireframes: false, background: '#87CEEB' }
+      });
+
+      M.Render.run(render);
+      M.Runner.run(M.Runner.create(), engine);
+
+      var ground = M.Bodies.rectangle(512, 580, 1024, 40, { isStatic: true, render: { fillStyle: '#2e7d32' } });
+      
+      var anchor = { x: 180, y: 430 };
+      var ball = M.Bodies.circle(anchor.x, anchor.y, 16, {
+        isStatic: true,
+        render: { fillStyle: '#e64a19', strokeStyle: '#bf360c', lineWidth: 3 }
+      });
+
+      M.Composite.add(engine.world, [ground, ball]);
+
+      var drag = false;
+      var canvas = render.canvas;
+
+      function getPos(e) {
+        var rect = canvas.getBoundingClientRect();
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      }
+
+      canvas.addEventListener('mousedown', function (e) {
+        var p = getPos(e);
+        if (Math.hypot(p.x - ball.position.x, p.y - ball.position.y) < 40) drag = true;
+      });
+
+      window.addEventListener('mousemove', function (e) {
+        if (!drag) return;
+        var p = getPos(e);
+        var dx = p.x - anchor.x, dy = p.y - anchor.y;
+        var dist = Math.min(Math.hypot(dx, dy), 100);
+        var angle = Math.atan2(dy, dx);
+        M.Body.setPosition(ball, { x: anchor.x + Math.cos(angle) * dist, y: anchor.y + Math.sin(angle) * dist });
+      });
+
+      window.addEventListener('mouseup', function () {
+        if (!drag) return;
+        drag = false;
+        M.Body.setPosition(ball, anchor);
+      });
+
+      M.Events.on(render, 'afterRender', function () {
+        var ctx = render.context;
+        ctx.save();
+        ctx.strokeStyle = '#301c0d'; ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.moveTo(anchor.x - 15, anchor.y); ctx.lineTo(ball.position.x, ball.position.y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(anchor.x + 15, anchor.y); ctx.lineTo(ball.position.x, ball.position.y); ctx.stroke();
+        ctx.fillStyle = '#ffffff'; ctx.font = 'bold 20px sans-serif';
+        ctx.fillText('Week 4: Slingshot Drag & Elastic Interaction (Drag the Bird!)', 20, 40);
+        ctx.restore();
+      });
+    })();
+  </script>
+</body>
+</html>
